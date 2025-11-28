@@ -2,18 +2,7 @@ from __future__ import annotations
 import numpy as np
 
 def initialize(pop_size: int, n_route: int, lower: np.ndarray, upper: np.ndarray, rng: np.random.Generator | None = None) -> np.ndarray:
-    """
-    Python port of MATLAB initialize.m
 
-    Chromosome layout per individual (length = 3 * n_route):
-      [ 0..n_route-1 ]            : block1 (MCV id per edge)           -> integer-like
-      [ n_route..2*n_route-1 ]    : block2 (charge ratio per edge)     -> float in [lower_i, upper_i]
-      [ 2*n_route..3*n_route-1 ]  : block3 (charge time per edge)      -> float in [t_char_min, t_char_max]
-
-    NOTE:
-    - We keep dtype=float for the whole array (to match MATLAB double),
-      but block1 values are still integers after sampling/repair.
-    """
     rng = rng or np.random.default_rng()
     half = pop_size // 2
 

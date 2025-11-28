@@ -1,4 +1,3 @@
-# src/uav_mcv/simulate.py
 from __future__ import annotations
 import numpy as np
 from .. import config
@@ -84,8 +83,15 @@ def _bounds_for_edges(route: np.ndarray,
     return lower, upper
 
 # =============== Main pipeline ===============
-def main():
-    rng = np.random.default_rng(getattr(config, "SEED", 42))
+def main(seed: int | None = None):
+    # Lấy seed: ưu tiên tham số, nếu None thì lấy từ config.SEED (mặc định 42)
+    if seed is None:
+        seed = getattr(config, "SEED", 42)
+
+    # Có thể seed luôn global RNG nếu còn chỗ nào lỡ dùng np.random
+    np.random.seed(seed)
+    # RNG chuẩn để truyền xuống các hàm
+    rng = np.random.default_rng(seed)
 
     start_point = np.array(config.START_POINT, dtype=float)
     n_vehicle  = config.N_VEHICLE
@@ -98,17 +104,19 @@ def main():
     # === chọn instance từ config nếu có, mặc định point3.mat ===
     instance = getattr(config, "INSTANCE", "data/point3.mat")
     data = load_mat(instance)
-    point       = np.array(data["point"], dtype=float)
-    bestroute   = np.array(data["bestroute"], dtype=int).ravel()
-    bestbreak   = np.array(data["bestbreak"], dtype=int).ravel()
+    point        = np.array(data["point"], dtype=float)
+    bestroute    = np.array(data["bestroute"], dtype=int).ravel()
+    bestbreak    = np.array(data["bestbreak"], dtype=int).ravel()
     time_windows = np.array(data["time_windows"]) if "time_windows" in data else None
 
     nn = point.shape[0] + 1
     route = _build_route(bestroute, bestbreak, nn)   # 1-based
     n_route = len(route) - 1
 
-    lower, upper = _bounds_for_edges(route, point, start_point, n_vehicle, t_char_min, t_char_max, scope=6.0)
+    lower, upper = _bounds_for_edges(route, point, start_point,
+                                     n_vehicle, t_char_min, t_char_max, scope=6.0)
 
+    # Khởi tạo quần thể bằng rng
     pop1 = initialize(pop_size, n_route, lower, upper, rng=rng)
     pop2 = initialize(pop_size, n_route, lower, upper, rng=rng)
 
@@ -118,14 +126,17 @@ def main():
     fitness2 = CalFitness(obj2, con2)
 
     for it in range(gen):
-        print(f"Gen {it+1}/{gen}")
-        pool1 = tournament_selection(2, pop_size, fitness1)
-        pool2 = tournament_selection(2, pop_size, fitness2)
-        Offspring1 = GA(pop1[pool1], n_route, lower, upper)
-        Offspring2 = GA(pop2[pool2], n_route, lower, upper)
+        print(f" Gen {it+1}/{gen}")
+        # tournament_selection dùng rng
+        pool1 = tournament_selection(2, pop_size, fitness1, rng)
+        pool2 = tournament_selection(2, pop_size, fitness2, rng)
+        # GA dùng rng
+        Offspring1 = GA(pop1[pool1], n_route, lower, upper, rng)
+        Offspring2 = GA(pop2[pool2], n_route, lower, upper, rng)
+        # OBL dùng rng
         if rng.random() < p_obl:
-            Offspring1 = np.vstack([Offspring1, obl(Offspring1, lower, upper, n_route)])
-            Offspring2 = np.vstack([Offspring2, obl(Offspring2, lower, upper, n_route)])
+            Offspring1 = np.vstack([Offspring1, obl(Offspring1, lower, upper, n_route, rng)])
+            Offspring2 = np.vstack([Offspring2, obl(Offspring2, lower, upper, n_route, rng)])
         pop3 = np.vstack([pop1, Offspring1, Offspring2])
         pop4 = np.vstack([pop2, Offspring1, Offspring2])
         obj3, con3, *_ = cal_obj_con(pop3, route, n_route, pop3.shape[0], point, time_windows)
@@ -154,7 +165,9 @@ def main():
     # gọi lại để lấy point_cha_sort (phục vụ vẽ MCV)
     (_fit_b, _con_b,
      _rst, _rse, _cst, _cse, _cet, _cee,
-     _ret, _ree, point_cha_b, point_cha_sort_b) = cal_obj_con(x_best, route, n_route, 1, point, time_windows)
+     _ret, _ree, point_cha_b, point_cha_sort_b) = cal_obj_con(
+        x_best, route, n_route, 1, point, time_windows
+    )
 
     print("Best objective (cost, TW violation):", obj_sel)
 

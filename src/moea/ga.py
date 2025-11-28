@@ -1,15 +1,16 @@
 from __future__ import annotations
 import numpy as np
 
-def GA(Parent: np.ndarray, n_route: int, lower: np.ndarray, upper: np.ndarray,
-       proC: float = 1.0, disC: float = 20.0, proM: float = 1.0, disM: float = 20.0) -> np.ndarray:
-    """
-    Port của GA.m (đã sửa mask để tránh IndexError):
-      - Parent: (M, 3*n_route)
-      - block1 (int-like)  : one-point crossover + bitwise mutation (re-sample integer)
-      - block2+3 (float)   : SBX + polynomial mutation, clip theo [lower, upper]
-    """
-    # Chia nửa bố mẹ
+def GA(Parent: np.ndarray,
+       n_route: int,
+       lower: np.ndarray,
+       upper: np.ndarray,
+       rng: np.random.Generator,
+       proC: float = 1.0,
+       disC: float = 20.0,
+       proM: float = 1.0,
+       disM: float = 20.0) -> np.ndarray:
+
     half = Parent.shape[0] // 2
     P1 = Parent[:half]
     P2 = Parent[half:2 * half]
@@ -26,8 +27,8 @@ def GA(Parent: np.ndarray, n_route: int, lower: np.ndarray, upper: np.ndarray,
 
     if D > 0 and N > 0:
         # one-point crossover theo từng cá thể, xác suất proC
-        cuts = np.random.randint(1, D + 1, size=N)             # vị trí cắt 1..D
-        do_crossover = (np.random.rand(N) <= proC)              # mask theo hàng
+        cuts = rng.integers(1, D + 1, size=N)      # vị trí cắt 1..D
+        do_crossover = (rng.random(N) <= proC)     # mask theo hàng
         for r in range(N):
             if do_crossover[r]:
                 cut = cuts[r]
@@ -38,13 +39,10 @@ def GA(Parent: np.ndarray, n_route: int, lower: np.ndarray, upper: np.ndarray,
         # Bitwise mutation: mỗi gene có xác suất proM/D được thay ngẫu nhiên trong [lo1..hi1]
         lo1 = int(round(lower[b1][0]))
         hi1 = int(round(upper[b1][0]))
-        if D > 0:
-            site = (np.random.rand(2 * N, D) < (proM / max(D, 1)))
-            rand_vals = np.random.randint(lo1, hi1 + 1, size=(2 * N, D))
-            B1 = np.vstack([Off1, Off2]).astype(float)
-            B1[site] = rand_vals[site]
-        else:
-            B1 = np.vstack([Off1, Off2]).astype(float)
+        site = (rng.random((2 * N, D)) < (proM / max(D, 1)))
+        rand_vals = rng.integers(lo1, hi1 + 1, size=(2 * N, D))
+        B1 = np.vstack([Off1, Off2]).astype(float)
+        B1[site] = rand_vals[site]
     else:
         B1 = np.vstack([A1, A2]).astype(float)  # trường hợp N=0 hoặc D=0
 
@@ -55,14 +53,14 @@ def GA(Parent: np.ndarray, n_route: int, lower: np.ndarray, upper: np.ndarray,
 
     if D2 > 0 and N2 > 0:
         # SBX
-        mu = np.random.rand(N2, D2)
+        mu = rng.random((N2, D2))
         beta = np.empty_like(mu)
         beta[mu <= 0.5] = (2 * mu[mu <= 0.5]) ** (1.0 / (disC + 1.0))
         beta[mu > 0.5]  = (2 - 2 * mu[mu > 0.5]) ** (-1.0 / (disC + 1.0))
-        beta *= (-1) ** np.random.randint(0, 2, size=(N2, D2))
+        beta *= (-1) ** rng.integers(0, 2, size=(N2, D2))
 
         # Áp dụng xác suất crossover theo HÀNG (nếu hàng không lai, beta=1 trên cả hàng)
-        do_crossover23 = (np.random.rand(N2) <= proC)
+        do_crossover23 = (rng.random(N2) <= proC)
         if np.any(~do_crossover23):
             beta[~do_crossover23, :] = 1.0
 
@@ -75,8 +73,8 @@ def GA(Parent: np.ndarray, n_route: int, lower: np.ndarray, upper: np.ndarray,
         upper23 = np.broadcast_to(upper[b2b3], (2 * N2, D2))
         B23 = np.minimum(np.maximum(B23, lower23), upper23)
 
-        site = (np.random.rand(2 * N2, D2) < (proM / max(D2, 1)))
-        mu2  = np.random.rand(2 * N2, D2)
+        site = (rng.random((2 * N2, D2)) < (proM / max(D2, 1)))
+        mu2  = rng.random((2 * N2, D2))
 
         # nhánh mu<=0.5
         temp1 = site & (mu2 <= 0.5)

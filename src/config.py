@@ -1,6 +1,6 @@
 # Global configuration parameters
 
-SEED = 1
+SEED = 0
 MAX_GEN = 200
 POP_SIZE = 200
 CROSS_PROB = 0.9

@@ -2,9 +2,12 @@ from __future__ import annotations
 import numpy as np
 from scipy.spatial.distance import cdist
 
-def tournament_selection(k: int, pop_size: int, fitness: np.ndarray) -> np.ndarray:
+def tournament_selection(k: int,
+                         pop_size: int,
+                         fitness: np.ndarray,
+                         rng: np.random.Generator) -> np.ndarray:
     """
-    Port TournamentSelection.m
+    Port TournamentSelection.m (refactor dùng rng)
     - rank theo fitness (nhỏ tốt)
     - chọn k ứng viên ngẫu nhiên, lấy tốt nhất
     Trả về: chỉ số (pop_size,)
@@ -14,7 +17,7 @@ def tournament_selection(k: int, pop_size: int, fitness: np.ndarray) -> np.ndarr
     rank = np.empty_like(order)
     rank[order] = np.arange(n)
 
-    Parents = np.random.randint(0, n, size=(k, pop_size))
+    Parents = rng.integers(0, n, size=(k, pop_size))
     best_rows = np.argmin(rank[Parents], axis=0)
     idx = Parents[best_rows, np.arange(pop_size)]
     return idx.astype(int)
