@@ -10,16 +10,7 @@ def cal_obj_con(pop: np.ndarray,
                 pop_size: int,
                 point: np.ndarray,         # shape (n_point,2) — CHƯA gồm depot
                 time_windows: np.ndarray | None):
-    """
-    Port nguyên tắc từ MATLAB cal_obj_con.m.
-    Trả về:
-        fit (pop_size,2), con (pop_size,3),
-        route_start_time, route_start_ele, cha_start_time, cha_start_ele,
-        cha_end_time, cha_end_ele, route_end_time, route_end_ele,
-        point_cha (list of arrays), point_cha_sort (list of arrays)
-    """
 
-    # ====== GLOBALs trong MATLAB ======
     n_point   = point.shape[0]
     n_vehicle = config.N_VEHICLE
     start_pt  = np.array(config.START_POINT, dtype=float)
@@ -179,7 +170,7 @@ def cal_obj_con(pop: np.ndarray,
 
         # cửa sổ thời gian: chỉ cộng trễ khi đích tiếp theo không phải depot
         if time_windows is not None:
-            for z in range(1, n_route + 1):   # MATLAB z=2..n_route+1 => dùng z-1 ở Python
+            for z in range(1, n_route + 1):
                 if int(route[z]) != nn:
                     late = route_end_time[i, z - 1] - float(time_windows[int(route[z]) - 1])
                     if late > 0:
@@ -196,9 +187,7 @@ def cal_obj_con(pop: np.ndarray,
 
 
 def CalFitness(obj: np.ndarray, con: np.ndarray | None = None) -> np.ndarray:
-    """
-    Port tương đương CalFitness.m (bản rút gọn giữ đúng logic dominance + penalty).
-    """
+
     N = obj.shape[0]
     CV = np.zeros(N) if con is None else np.maximum(con, 0.0).sum(axis=1)
 
