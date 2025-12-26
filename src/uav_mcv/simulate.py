@@ -166,13 +166,13 @@ def main(seed: int):
     tag = f"seed{seed}_uav{config.N_UAV}_mcv{config.N_VEHICLE}"
 
     plot_uav_route(point, route, start_point,
-                   save_path=f"results/{tag}_uav_route.png")
+                   save_path=f"results/{tag}_uav_rute.png")
 
     plot_mcv_route(point, route, point_cha_sort, start_point,
-                   save_path=f"results/{tag}_mcv_route.png")
+                   save_path=f"results/{tag}_mcv_roue.png")
 
     plot_uav_routes_detailed(point, route, start_point, assign_info[0],
-                             save_path=f"results/{tag}_uav_detail.png")
+                             save_path=f"results/{tag}_uav_detai.png")
 
     plot_mcv_charging_detailed(
         point,
@@ -180,22 +180,22 @@ def main(seed: int):
         start_point,
         assign_info[0],
         title=f"MCV charging (seed={seed}, UAV={config.N_UAV}, MCV={config.N_VEHICLE})",
-        save_path=f"results/{tag}_mcv_detail.png"
+        save_path=f"results/{tag}_mcv_detai.png"
     )
 
 
 # =============== RUN ALL ===============
 if __name__ == "__main__":
 
-    SEEDS = [0, 1, 2, 3, 4, 5 , 6, 7, 8, 9]
+    SEEDS = [8]
 
     for seed in SEEDS:
-        for uav in range(1, 4):      # UAV: 1 → 3
-            for mcv in range(3, 8):  # MCV: 3 → 7
+        for uav in range(3, 4):      # UAV: 1 → 3
+            for mcv in range(3, 4):  # MCV: 3 → 7
 
                 config.N_UAV = uav
                 config.N_VEHICLE = mcv
 
-                print(f"\n===== RUN seed={seed}, UAV={uav}, MCV={mcv} =====")
+                print(f"\n===== RUN eed={seed+10}, UAV={uav}, MCV={mcv} =====")
 
                 main(seed)

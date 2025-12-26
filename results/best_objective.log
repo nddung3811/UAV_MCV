@@ -150,3 +150,5 @@ seed=9, UAV=3, MCV=4, Best objective (cost, TW violation): [45896.276763473, 68.
 seed=9, UAV=3, MCV=5, Best objective (cost, TW violation): [47392.582855750064, 96.67537860319075]
 seed=9, UAV=3, MCV=6, Best objective (cost, TW violation): [52040.294749967026, 80.67884903249228]
 seed=9, UAV=3, MCV=7, Best objective (cost, TW violation): [58839.05738141403, 70.36524723871753]
+seed=8, UAV=3, MCV=3, Best objective (cost, TW violation): [40323.652887179844, 63.22169569519923]
+seed=8, UAV=3, MCV=3, Best objective (cost, TW violation): [40323.652887179844, 63.22169569519923]
