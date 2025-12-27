@@ -80,7 +80,7 @@ def plot_uav_route(point, route_1based, start_point, save_path=None):
 # ============================================================
 def plot_mcv_route(point, route_1based, point_cha_sort, start_point, save_path=None):
 
-    if not point_cha_sort or not point_cha_sort[0]:
+    if point_cha_sort is None or len(point_cha_sort) == 0 or point_cha_sort[0] is None or len(point_cha_sort[0]) == 0:
         return
 
     P = _ensure2d(point)
@@ -150,7 +150,9 @@ def plot_mcv_route(point, route_1based, point_cha_sort, start_point, save_path=N
 # ============================================================
 # 3) UAV ROUTES – CHI TIẾT
 # ============================================================
-def plot_uav_routes_detailed(point, route, start_point, assign, title, save_path=None):
+def plot_uav_routes_detailed(point, route, start_point, assign,
+                             title="UAV routes (detail)", save_path=None):
+
 
     n_point = point.shape[0]
     nn = n_point + 1
