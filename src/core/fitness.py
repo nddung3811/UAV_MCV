@@ -255,11 +255,27 @@ def evaluate_objectives_constraints(
 
         constraints[i, :] = constraint_i
 
+        mcv_charge_points_sorted = {}
+
+        for k in range(1, n_vehicle + 1):
+            idx = np.where(population[i, :n_edges].astype(int) == k)[0]
+            if idx.size == 0:
+                continue
+
+            pts = pcs_arr[idx]
+            t_start = charge_start_time[i, idx]
+
+            order = np.argsort(t_start)
+            pts = pts[order]
+
+            mcv_charge_points_sorted[k] = pts.tolist()
+
         # ---------- Plot info ----------
         assignment_info[i] = {
             "uav_blocks": uav_blocks,
             "uav_id_per_edge": uav_id_per_edge.tolist(),
             "mcv_id_per_edge": population[i, :n_edges].astype(int).tolist(),
+            "mcv_charge_points_sorted": mcv_charge_points_sorted,
         }
 
     return (
