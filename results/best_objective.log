@@ -156,3 +156,6 @@ seed=8, UAV=3, MCV=3, Best objective (cost, TW violation): [40323.652887179844, 
 seed=8, UAV=3, MCV=3, Best objective (cost, TW violation): [40323.652887179844, 63.22169569519923]
 seed=8, UAV=1, MCV=2, Best objective (cost, TW violation): [51092.08232695732, 177.78511942415952]
 seed=1, UAV=3, MCV=5, best_objective=[42436.60091040832, 44.596093837601984]
+seed=1, UAV=3, MCV=3, best_objective=[15336.24597508916, 0.0]
+seed=1, UAV=3, MCV=3, best_objective=[15336.24597508916, 0.0]
+seed=2, UAV=3, MCV=3, best_objective=[14972.833921265303, 0.0]

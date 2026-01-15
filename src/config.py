@@ -12,4 +12,4 @@ N_UAV = 3
 N_VEHICLE = 5
 START_POINT = (300, 300)
 
-INSTANCE = "data/point3.mat"   # hoặc "data/point4.mat", "data/point5.mat"
+INSTANCE = "data/point4.mat"   # hoặc "data/point4.mat", "data/point5.mat"
