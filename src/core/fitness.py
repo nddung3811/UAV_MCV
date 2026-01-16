@@ -254,7 +254,11 @@ def evaluate_objectives_constraints(
                         objectives[i, 1] += late
 
         constraints[i, :] = constraint_i
-
+        uav_routes_nodes = {}
+        for uid, (L, R) in enumerate(uav_blocks, start=1):
+            # edges [L, R-1] correspond to nodes route[L] -> route[R]
+            nodes = route[L:R + 1].tolist()
+            uav_routes_nodes[uid] = nodes
         mcv_charge_points_sorted = {}
 
         for k in range(1, n_vehicle + 1):
@@ -274,6 +278,7 @@ def evaluate_objectives_constraints(
         assignment_info[i] = {
             "uav_blocks": uav_blocks,
             "uav_id_per_edge": uav_id_per_edge.tolist(),
+            "uav_routes_nodes": uav_routes_nodes,
             "mcv_id_per_edge": population[i, :n_edges].astype(int).tolist(),
             "mcv_charge_points_sorted": mcv_charge_points_sorted,
         }

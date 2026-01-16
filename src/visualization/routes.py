@@ -177,6 +177,11 @@ def plot_mcv_route(
     plt.savefig(save_path, dpi=300) if save_path else plt.show()
     plt.close()
 
+
+# =========================================================
+# 3) UAV ROUTES (DETAILED)
+# =========================================================
+
 def plot_uav_routes_detailed(
     points: np.ndarray,
     route_1based: np.ndarray,
@@ -186,7 +191,7 @@ def plot_uav_routes_detailed(
     save_path: str | None = None,
 ):
     """
-    Plot detailed UAV routes per UAV (defensive).
+    Plot detailed UAV routes per UAV.
     """
     n_points = points.shape[0]
     depot_id = n_points + 1
@@ -199,24 +204,24 @@ def plot_uav_routes_detailed(
     def _coord(node: int):
         return depot if node == depot_id else points[node - 1]
 
-    uav_routes = assignment.get("uav_routes_nodes", {})
-
-    if uav_routes:
-        for uid, nodes in uav_routes.items():
-            if not nodes:
-                continue
-            xs, ys = zip(*(_coord(int(n)) for n in nodes))
-            ax.plot(xs, ys, lw=1.4, label=f"UAV{uid}")
-
-        ax.legend()
+    for uid, nodes in assignment["uav_routes_nodes"].items():
+        xs, ys = zip(*(_coord(int(n)) for n in nodes))
+        ax.plot(xs, ys, lw=1.4, label=f"UAV{uid}")
 
     ax.set_title(title, fontsize=14, weight="bold")
     ax.axis("equal")
     ax.grid(True, alpha=0.18)
+    ax.legend()
     plt.tight_layout()
 
     plt.savefig(save_path, dpi=300) if save_path else plt.show()
     plt.close()
+
+
+# =========================================================
+# 4) MCV CHARGING (DETAILED)
+# =========================================================
+
 def plot_mcv_charging_detailed(
     points: np.ndarray,
     route_1based: np.ndarray,
@@ -226,7 +231,7 @@ def plot_mcv_charging_detailed(
     save_path: str | None = None,
 ):
     """
-    Plot detailed MCV charging routes (defensive).
+    Plot detailed MCV charging routes.
     """
     n_points = points.shape[0]
     depot_id = n_points + 1
@@ -246,9 +251,7 @@ def plot_mcv_charging_detailed(
 
     colors = plt.cm.tab10.colors
 
-    mcv_points = assignment.get("mcv_charge_points_sorted", {})
-
-    for mcv_id, pts in mcv_points.items():
+    for mcv_id, pts in assignment["mcv_charge_points_sorted"].items():
         if not pts:
             continue
 
