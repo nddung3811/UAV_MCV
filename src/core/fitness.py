@@ -43,7 +43,6 @@ def evaluate_objectives_constraints(
 
     n_points = points.shape[0]
     n_vehicle = int(config.N_VEHICLE)
-    n_uav = max(1, int(getattr(config, "N_UAV", 1)))
     depot = np.asarray(config.START_POINT, dtype=float)
 
     # ---------------- Physical parameters ----------------
@@ -87,12 +86,7 @@ def evaluate_objectives_constraints(
     points_ext = np.vstack([points, depot[None, :]])
     depot_idx = n_points + 1
 
-    # FIXED UAV segmentation
-    uav_blocks = split_edges_by_uav(n_edges, n_uav)
 
-    uav_id_per_edge = np.zeros(n_edges, dtype=int)
-    for uid, (L, R) in enumerate(uav_blocks, start=1):
-        uav_id_per_edge[L:R] = uid
 
     # =====================================================
     # Main loop
@@ -107,9 +101,7 @@ def evaluate_objectives_constraints(
             u = int(route[j])
             v = int(route[j + 1])
 
-            is_uav_start = any(j == L for (L, _) in uav_blocks)
-
-            if is_uav_start or u == depot_idx:
+            if u == depot_idx:
                 route_start_time[i, j] = 0.0
                 route_start_energy[i, j] = uav_capacity
             else:
@@ -243,7 +235,7 @@ def evaluate_objectives_constraints(
         ) * electricity_price + vehicle_cost * len(used_vehicles)
 
         objectives[i, 1] = 0.0
-        constraints[i, 2] = np.sum(vehicle_constraints)
+        constraint_i[2] = np.sum(vehicle_constraints)
 
         # ---------- Time windows ----------
         if time_windows is not None:
@@ -255,10 +247,17 @@ def evaluate_objectives_constraints(
 
         constraints[i, :] = constraint_i
         uav_routes_nodes = {}
-        for uid, (L, R) in enumerate(uav_blocks, start=1):
-            # edges [L, R-1] correspond to nodes route[L] -> route[R]
-            nodes = route[L:R + 1].tolist()
-            uav_routes_nodes[uid] = nodes
+        current_nodes = []
+        uid = 1
+
+        for node in route:
+            if int(node) == depot_idx:
+                if current_nodes:
+                    uav_routes_nodes[uid] = current_nodes.copy()
+                    uid += 1
+                    current_nodes.clear()
+            else:
+                current_nodes.append(int(node))
         mcv_charge_points_sorted = {}
 
         for k in range(1, n_vehicle + 1):
@@ -276,8 +275,6 @@ def evaluate_objectives_constraints(
 
         # ---------- Plot info ----------
         assignment_info[i] = {
-            "uav_blocks": uav_blocks,
-            "uav_id_per_edge": uav_id_per_edge.tolist(),
             "uav_routes_nodes": uav_routes_nodes,
             "mcv_id_per_edge": population[i, :n_edges].astype(int).tolist(),
             "mcv_charge_points_sorted": mcv_charge_points_sorted,

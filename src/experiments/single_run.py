@@ -9,8 +9,7 @@ from src.algorithms.ga import genetic_operator
 from src.algorithms.obl import opposition_based_learning
 from src.decision.topsis import topsis_matlab
 from src.visualization.routes import (
-    plot_mcv_route, plot_uav_route,
-    plot_uav_routes_detailed, plot_mcv_charging_detailed
+     plot_uav_route, plot_mcv_charging_detailed
 )
 
 from src.core.initialize import initialize_population
@@ -91,7 +90,7 @@ def run_experiment(seed: int):
 
     depot = np.asarray(config.START_POINT, dtype=float)
     n_vehicle = int(config.N_VEHICLE)
-    n_uav = int(config.N_UAV)
+
 
     pop_size = 200
     generations = 200
@@ -105,6 +104,7 @@ def run_experiment(seed: int):
     bestroute = np.asarray(data["bestroute"], dtype=int).ravel()
     bestbreak = np.asarray(data["bestbreak"], dtype=int).ravel()
     time_windows = np.asarray(data["time_windows"]) if "time_windows" in data else None
+    n_uav = len(bestbreak) + 1
 
     depot_id = points.shape[0] + 1
     route = _build_route(bestroute, bestbreak, depot_id)
@@ -190,7 +190,6 @@ def run_experiment(seed: int):
 
     log_line = (
         f"seed={seed}, "
-        f"UAV={n_uav}, "
         f"MCV={n_vehicle}, "
         f"best_objective={obj_sel.tolist()}"
     )
@@ -208,23 +207,18 @@ def run_experiment(seed: int):
         )
     )
 
-    tag = f"seed{seed}_uav{n_uav}_mcv{n_vehicle}"
+    tag = f"seed{seed}_mcv{n_vehicle}"
 
     plot_uav_route(points, route, depot,
                    save_path=f"results/{tag}_uav_route.png")
 
-    plot_mcv_route(points, route, point_cha_sort, depot,
-                   save_path=f"results/{tag}_mcv_route.png")
-
-    plot_uav_routes_detailed(points, route, depot, assign_info[0],
-                             save_path=f"results/{tag}_uav_detail.png")
 
     plot_mcv_charging_detailed(
         points,
         route,
         depot,
         assign_info[0],
-        title=f"MCV charging (seed={seed}, UAV={n_uav}, MCV={n_vehicle})",
+        title=f"MCV charging (seed={seed},  MCV={n_vehicle})",
         save_path=f"results/{tag}_mcv_detail.png"
     )
 

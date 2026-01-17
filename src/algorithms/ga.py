@@ -79,6 +79,8 @@ def genetic_operator(
         beta[rand > 0.5] = (2 - 2 * rand[rand > 0.5]) ** (-1.0 / (crossover_dist + 1))
         beta *= (-1) ** rng.integers(0, 2, size=(num_ind2, num_gene2))
 
+        gene_mask = rng.random((num_ind2, num_gene2)) < 0.5
+        beta[~gene_mask] = 1.0
         do_crossover = rng.random(num_ind2) <= crossover_prob
         beta[~do_crossover, :] = 1.0
 
